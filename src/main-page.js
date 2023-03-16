@@ -35,8 +35,10 @@ function pageController($scope, $interval) {
 			return;
 		}
 
-		// Upload only new replays
-		if (this.replays[replayNumber].status !== Constants.REPLAY_STATUS.NEW) {
+		// Upload only new replays and failed attempts (UnknownCode/UploadError)
+		if (this.replays[replayNumber].status !== Constants.REPLAY_STATUS.NEW &&
+			this.replays[replayNumber].status !== Constants.REPLAY_STATUS.UNKNOWN &&
+			this.replays[replayNumber].status !== Constants.REPLAY_STATUS.UPLOAD_ERROR) {
 			return this.uploadReplay(replayNumber + 1);
 		}
 
