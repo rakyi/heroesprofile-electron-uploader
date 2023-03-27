@@ -1,7 +1,7 @@
 {
   "name": "heroesprofile-electron-uploader",
   "productName": "HeroesProfile Electron Replay Uploader",
-  "version": "1.0.1",
+  "version": "2.0.2",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
