@@ -24,7 +24,8 @@ class API {
 				'User-Agent': USER_AGENT
 			},
 			formData: {
-				file: fs.createReadStream(replay.fullPath)
+				file: fs.createReadStream(replay.fullPath),
+				version: packageInfo.version
 			}
 		};
 
