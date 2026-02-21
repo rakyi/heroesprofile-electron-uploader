@@ -1,34 +1,43 @@
-const storage = require('electron-storage');
+const fs = require('fs');
+const path = require('path');
 const logger = require('winston');
+const { getUserDataPath } = require('./paths');
 
 const STORAGE_VERSION = 1;
 const STORAGE_FILE = 'upload-data.json';
 
+const STORAGE_FILE_PATH = path.join(getUserDataPath(), STORAGE_FILE);
+
 class Storage {
 	static async getLocalDatabase() {
-		const isStorageExist = await storage.isPathExists(STORAGE_FILE, undefined);
-		if (!isStorageExist) {
-			logger.info("Storage doens't exist. Creating now...");
+		try {
+			await fs.promises.access(STORAGE_FILE_PATH);
+		} catch {
+			logger.info("Storage doesn't exist. Creating now...");
 			return await Storage.saveLocalDatabase({});
 		}
-		const storageData = await storage.get(STORAGE_FILE, undefined);
 
-		// TODO implement migration
-		if (storageData.version !== STORAGE_VERSION) {
-			logger.info("Storage doens't match app's version. Creating new...");
+		try {
+			const storageData = JSON.parse(await fs.promises.readFile(STORAGE_FILE_PATH, 'utf-8'));
+
+			// TODO implement migration
+			if (storageData.version !== STORAGE_VERSION) {
+				logger.info("Storage doesn't match app's version. Creating new...");
+				return await Storage.saveLocalDatabase({});
+			}
+			return storageData;
+		} catch (err) {
+			logger.error(`Error reading storage: ${err.message}`);
 			return await Storage.saveLocalDatabase({});
 		}
-		return await storage.get(STORAGE_FILE, undefined);
 	}
 
 	static async saveLocalDatabase(replays) {
 		logger.info('Saving data to the storage...');
-		await storage.set(
-			STORAGE_FILE,
-			{ replays, version: STORAGE_VERSION },
-			undefined
-		);
-		return { replays, version: STORAGE_VERSION };
+		const data = { replays, version: STORAGE_VERSION };
+		await fs.promises.mkdir(path.dirname(STORAGE_FILE_PATH), { recursive: true });
+		await fs.promises.writeFile(STORAGE_FILE_PATH, JSON.stringify(data));
+		return data;
 	}
 }
 
